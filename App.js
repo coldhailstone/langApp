@@ -53,8 +53,20 @@ export default function App() {
     const onPressIn = Animated.spring(scale, { toValue: 0.95, useNativeDriver: true });
     const onPressOut = Animated.spring(scale, { toValue: 1, useNativeDriver: true });
     const goCenter = Animated.spring(position, { toValue: 0, useNativeDriver: true });
-    const goLeft = Animated.spring(position, { toValue: -500, tension: 5, useNativeDriver: true });
-    const goRight = Animated.spring(position, { toValue: 500, tension: 5, useNativeDriver: true });
+    const goLeft = Animated.spring(position, {
+        toValue: -500,
+        tension: 5,
+        restSpeedThreshold: 100,
+        restDisplacementThreshold: 100,
+        useNativeDriver: true,
+    });
+    const goRight = Animated.spring(position, {
+        toValue: 500,
+        tension: 5,
+        restSpeedThreshold: 100,
+        restDisplacementThreshold: 100,
+        useNativeDriver: true,
+    });
     const panResponder = useRef(
         PanResponder.create({
             onStartShouldSetPanResponder: () => true,
