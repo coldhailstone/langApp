@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Animated, Easing, PanResponder, View } from 'react-native';
 import styled from 'styled-components/native';
+import icons from './icons';
 
 const BLACK_COLOR = '#1e272e';
 const GREY = '#485460';
@@ -101,20 +102,34 @@ export default function App() {
             onPanResponderRelease: (_, { dy }) => {
                 if (dy < -250 || dy > 250) {
                     Animated.sequence([
-                        Animated.parallel([onDropOpacity, onDropScale]),
+                        Animated.parallel([onDropScale, onDropOpacity]),
                         Animated.timing(position, {
                             toValue: 0,
                             duration: 50,
                             easing: Easing.linear,
                             useNativeDriver: true,
                         }),
-                    ]).start();
+                    ]).start(nextIcon);
                 } else {
                     Animated.parallel([goHome, onPressOut]).start();
                 }
             },
         })
     ).current;
+    const [index, setIndex] = useState(0);
+    const nextIcon = () => {
+        setIndex((prev) => prev + 1);
+        Animated.parallel([
+            Animated.spring(scale, {
+                toValue: 1,
+                useNativeDriver: true,
+            }),
+            Animated.spring(opacity, {
+                toValue: 1,
+                useNativeDriver: true,
+            }),
+        ]).start();
+    };
 
     return (
         <Container>
@@ -140,7 +155,7 @@ export default function App() {
                         opacity,
                     }}
                 >
-                    <Ionicons name='beer' color={GREY} size={87} />
+                    <Ionicons name={icons[index]} color={GREY} size={87} />
                 </IconCard>
             </Center>
             <Edge>
