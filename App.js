@@ -1,126 +1,108 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import { Animated, PanResponder, View } from 'react-native';
 import styled from 'styled-components/native';
-import icons from './icons';
+
+const BLACK_COLOR = '#1e272e';
+const GREY = '#485460';
+const GREEN = '#2ecc71';
+const RED = '#e74c3c';
 
 const Container = styled.View`
     flex: 1;
-    justify-content: center;
-    align-items: center;
-    background-color: #00a8ff;
+    background-color: ${BLACK_COLOR};
 `;
 
-const Card = styled(Animated.createAnimatedComponent(View))`
-    background-color: white;
-    width: 300px;
-    height: 300px;
-    justify-content: center;
-    align-items: center;
-    border-radius: 12px;
-    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
-    position: absolute;
-`;
-
-const Btn = styled.TouchableOpacity`
-    margin: 0px 10px;
-`;
-
-const BtnContainer = styled.View`
-    flex-direction: row;
+const Edge = styled.View`
     flex: 1;
+    justify-content: center;
+    align-items: center;
 `;
 
-const CardContainer = styled.View`
+const WordContainer = styled(Animated.createAnimatedComponent(View))`
+    width: 100px;
+    height: 100px;
+    justify-content: center;
+    align-items: center;
+    background-color: ${GREY};
+    border-radius: 50px;
+`;
+
+const Word = styled.Text`
+    font-size: 38px;
+    font-weight: 500;
+    color: ${(props) => props.color};
+`;
+
+const Center = styled.View`
     flex: 3;
     justify-content: center;
     align-items: center;
 `;
 
+const IconCard = styled(Animated.createAnimatedComponent(View))`
+    background-color: white;
+    padding: 5px 10px;
+    border-radius: 10px;
+`;
+
 export default function App() {
     const scale = useRef(new Animated.Value(1)).current;
-    const position = useRef(new Animated.Value(0)).current;
-    const rotation = position.interpolate({
-        inputRange: [-250, 250],
-        outputRange: ['-15deg', '15deg'],
-        extrapolate: 'clamp',
-    });
-    const secondSacle = position.interpolate({
-        inputRange: [-300, 0, 300],
-        outputRange: [1, 0.7, 1],
-        extrapolate: 'clamp',
-    });
-    const onPressIn = Animated.spring(scale, { toValue: 0.95, useNativeDriver: true });
-    const onPressOut = Animated.spring(scale, { toValue: 1, useNativeDriver: true });
-    const goCenter = Animated.spring(position, { toValue: 0, useNativeDriver: true });
-    const goLeft = Animated.spring(position, {
-        toValue: -500,
-        tension: 5,
-        restSpeedThreshold: 100,
-        restDisplacementThreshold: 100,
+    const position = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
+    const onPressIn = Animated.spring(scale, {
+        toValue: 0.9,
         useNativeDriver: true,
     });
-    const goRight = Animated.spring(position, {
-        toValue: 500,
-        tension: 5,
-        restSpeedThreshold: 100,
-        restDisplacementThreshold: 100,
+    const onPressOut = Animated.spring(scale, {
+        toValue: 1,
+        useNativeDriver: true,
+    });
+    const goHome = Animated.spring(position, {
+        toValue: 0,
         useNativeDriver: true,
     });
     const panResponder = useRef(
         PanResponder.create({
             onStartShouldSetPanResponder: () => true,
-            onPanResponderMove: (_, { dx }) => {
-                position.setValue(dx);
+            onPanResponderMove: (_, { dx, dy }) => {
+                position.setValue({ x: dx, y: dy });
             },
-            onPanResponderGrant: () => onPressIn.start(),
-            onPanResponderRelease: (_, { dx }) => {
-                if (dx < -250) {
-                    goLeft.start(onDismiss);
-                } else if (dx > 250) {
-                    goRight.start(onDismiss);
-                } else {
-                    Animated.parallel([onPressOut, goCenter]).start();
-                }
+            onPanResponderGrant: () => {
+                onPressIn.start();
+            },
+            onPanResponderRelease: () => {
+                Animated.parallel([goHome, onPressOut]).start();
             },
         })
     ).current;
-    const [index, setIndex] = useState(0);
-    const onDismiss = () => {
-        scale.setValue(1);
-        position.setValue(0);
-        setIndex((prev) => prev + 1);
-    };
-    const closePress = () => {
-        goLeft.start(onDismiss);
-    };
-    const checkmarkPress = () => {
-        goRight.start(onDismiss);
-    };
 
     return (
         <Container>
-            <CardContainer>
-                <Card style={{ transform: [{ scale: secondSacle }] }}>
-                    <Ionicons name={icons[index + 1]} color='#192a56' size={98} />
-                </Card>
-                <Card
+            <Edge>
+                <WordContainer>
+                    <Word color={GREEN}>알아</Word>
+                </WordContainer>
+            </Edge>
+            <Center>
+                <IconCard
                     {...panResponder.panHandlers}
                     style={{
-                        transform: [{ scale }, { translateX: position }, { rotateZ: rotation }],
+                        transform: [
+                            ...position.getTranslateTransform(),
+                            {
+                                scale,
+                            },
+                        ],
                     }}
                 >
-                    <Ionicons name={icons[index]} color='#192a56' size={98} />
-                </Card>
-            </CardContainer>
-            <BtnContainer>
-                <Btn onPress={closePress}>
-                    <Ionicons name='close-circle' color='white' size={42} />
-                </Btn>
-                <Btn onPress={checkmarkPress}>
-                    <Ionicons name='checkmark-circle' color='white' size={42} />
-                </Btn>
-            </BtnContainer>
+                    <Ionicons name='beer' color={GREY} size={87} />
+                </IconCard>
+            </Center>
+            <Edge>
+                <WordContainer>
+                    <Word color={RED}>몰라</Word>
+                </WordContainer>
+            </Edge>
         </Container>
     );
 }
